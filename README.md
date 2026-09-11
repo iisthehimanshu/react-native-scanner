@@ -163,6 +163,37 @@ Two properties worth knowing:
 - **Tunables are configuration, not constants** — batching window, scan restart
   interval, GPS interval — so they can be retuned by redeploying the page.
 
+## The user's position marker
+
+The page draws the user as a **directional arrow that turns with the phone's
+compass** — but only where it actually has a compass to turn it with.
+
+| Where the page runs | Marker | Rotates |
+|---|---|---|
+| Inside this host app | arrow | yes — the device magnetometer, relayed over the bridge |
+| A plain browser (QR code, desktop) | plain disc | no |
+
+Nothing is required of the host app for this. The page starts the `heading`
+stream itself as part of its normal startup, the module relays the
+magnetometer, and the arrow appears once a fix is obtained. There is no prop to
+set and no call to make.
+
+The disc in a plain browser is deliberate. `window.__iwayplusScanner` is absent
+there, so no heading reaches the page, and the browser's own
+`DeviceOrientation` API is not a substitute: it needs its own permission
+prompt, it is unreliable inside a WebView, and on most engines it reports an
+orientation that is not north-referenced. An arrow fed by that would point
+confidently in the wrong direction, so the page shows a marker that makes no
+directional claim instead.
+
+Two consequences worth knowing when testing:
+
+- **Comparing the app against a browser tab is not a like-for-like test.** A
+  disc in the browser and an arrow in the app is the system working, not a
+  regression.
+- **A denied location permission costs you the arrow too**, not just the blue
+  dot's accuracy — heading is gated behind the same grant on Android.
+
 ## Behaviour notes
 
 - Scanning stops when the app backgrounds and resumes on foreground. The
