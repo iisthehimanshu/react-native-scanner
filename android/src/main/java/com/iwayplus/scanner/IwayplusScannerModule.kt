@@ -150,7 +150,7 @@ class IwayplusScannerModule(
 
   companion object {
     const val NAME = "IwayplusScanner"
-    const val MODULE_VERSION = "0.1.0"
+    const val MODULE_VERSION = "0.1.1"
     const val PROTOCOL_VERSION = 1
     private const val ERROR_CODE = "IWAYPLUS_SCANNER_ERROR"
   }

@@ -389,7 +389,7 @@ public final class IwayplusScannerImpl: NSObject,
 
   @objc public func helloJson() -> String {
     Self.serialize([
-      "moduleVersion": "0.1.0",
+      "moduleVersion": "0.1.1",
       "platform": "ios",
       "osVersion": UIDevice.current.systemVersion,
     ])
