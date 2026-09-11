@@ -124,10 +124,8 @@ public final class IwayplusScannerImpl: NSObject,
 
     if let timeout = timeoutMs {
       timeoutTimer?.invalidate()
-      timeoutTimer = Timer.scheduledTimer(
-        withTimeInterval: timeout / 1000.0,
-        repeats: false
-      ) { [weak self] _ in
+      timeoutTimer = Self.mainTimer(interval: timeout / 1000.0, repeats: false) {
+        [weak self] _ in
         self?.stopBle()
       }
     }
@@ -157,12 +155,27 @@ public final class IwayplusScannerImpl: NSObject,
 
   private func restartFlushTimer() {
     flushTimer?.invalidate()
-    flushTimer = Timer.scheduledTimer(
-      withTimeInterval: flushInterval,
-      repeats: true
-    ) { [weak self] _ in
+    flushTimer = Self.mainTimer(interval: flushInterval, repeats: true) {
+      [weak self] _ in
       self?.flush()
     }
+  }
+
+  /// A timer on the main run loop in `.common` modes.
+  ///
+  /// `Timer.scheduledTimer` attaches to the calling thread's run loop, which
+  /// never runs on a GCD worker thread, so pinning to main keeps the timer alive
+  /// whichever wrapper calls in. `.common` keeps it firing while UIKit tracks a
+  /// touch; in the default mode BLE batches would pause for as long as the user
+  /// pans the map.
+  private static func mainTimer(
+    interval: TimeInterval,
+    repeats: Bool,
+    _ block: @escaping (Timer) -> Void
+  ) -> Timer {
+    let timer = Timer(timeInterval: interval, repeats: repeats, block: block)
+    RunLoop.main.add(timer, forMode: .common)
+    return timer
   }
 
   public func centralManagerDidUpdateState(_ central: CBCentralManager) {
