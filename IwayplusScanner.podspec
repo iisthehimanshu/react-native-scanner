@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.name         = "IwayplusScanner"
   s.version      = package["version"]
   s.summary      = package["description"]
-  s.license      = "UNLICENSED"
+  s.license      = { :type => "Proprietary", :file => "LICENSE" }
   s.authors      = { "Iwayplus" => "support@iwayplus.in" }
   s.homepage     = "https://iwayplus.in"
   s.platforms    = { :ios => "13.4" }
