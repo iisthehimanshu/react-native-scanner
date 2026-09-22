@@ -157,9 +157,16 @@ second argument. Events emitted before a handler is attached are queued (up to
 
 Two properties worth knowing:
 
-- **Advertisements are forwarded unfiltered.** Which beacons matter is
-  venue-dependent and is decided in the page, so onboarding a venue with
-  different hardware never requires a host app release.
+- **Only IwayPlus beacons are forwarded.** An advertisement is relayed to the
+  page when its advertised name starts with `IW` (case-insensitive); everything
+  else is dropped in the scan callback. The prefix identifies the hardware, not
+  a venue, so onboarding a venue with different beacon *layout* still requires
+  no host app release — but hardware that does not advertise an `IW` name does.
+  *Which* IW beacons matter is still decided in the page.
+
+  This is a CPU and bridge saving, not a battery one: Android's `ScanFilter`
+  matches a device name exactly rather than by prefix, so the radio still
+  reports every advertiser and only the relay is skipped.
 - **Tunables are configuration, not constants** — batching window, scan restart
   interval, GPS interval — so they can be retuned by redeploying the page.
 
