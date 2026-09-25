@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.2
 
 * New `accel` stream: the raw accelerometer, gravity included, for the page's
   step detector. Samples are in Android's convention (m/s², ~+9.8 on the axis
