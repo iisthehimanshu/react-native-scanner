@@ -76,8 +76,8 @@ RCT_EXPORT_MODULE()
 /// times a second with a payload holding tens of readings, and the payload is
 /// already valid JSON produced a moment earlier.
 - (void)sendType:(NSString *)type payload:(NSString *)payloadJson {
-  // Every emission originates on the main queue: CoreBluetooth and
-  // CoreLocation are both configured to deliver there, so the counter needs
+  // Every emission originates on the main queue: CoreBluetooth, CoreLocation
+  // and CoreMotion are all configured to deliver there, so the counter needs
   // no atomics.
   int64_t seq = ++_sequence;
   NSString *envelope = [NSString
@@ -151,6 +151,21 @@ RCT_EXPORT_MODULE()
 - (void)stopHeading:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   IWPOnMain(^{
     [self->_impl stopHeading];
+    resolve(nil);
+  });
+}
+
+- (void)startAccel:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+  IWPOnMain(^{
+    [self announceOnce];
+    [self->_impl startAccel];
+    resolve(nil);
+  });
+}
+
+- (void)stopAccel:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+  IWPOnMain(^{
+    [self->_impl stopAccel];
     resolve(nil);
   });
 }

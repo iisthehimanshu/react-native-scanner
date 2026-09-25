@@ -14,7 +14,9 @@ export type ScannerEventType =
   | 'hello'
   | 'ble'
   | 'gps'
+  | 'gpsStatus'
   | 'heading'
+  | 'accel'
   | 'adapter'
   | 'error';
 
@@ -44,10 +46,11 @@ export interface HelloPayload {
 /**
  * One BLE advertisement, forwarded verbatim.
  *
- * The module applies **no** filtering — not by name, not by manufacturer ID.
- * Which advertisers matter is venue-dependent and belongs in Dart, where it
- * can be changed by redeploying the web bundle instead of by asking the host
- * app's team to ship a release.
+ * Filtered to IwayPlus beacons by advertised-name prefix (`IW`,
+ * case-insensitive): by a hardware scan filter on Android 13+, and in the scan
+ * callback on iOS. Android below 13 cannot match a prefix in hardware and
+ * relays every advertiser. Which IW beacons matter is venue-dependent and is
+ * decided in Dart, where it can change by redeploying the web bundle.
  */
 export interface BleReading {
   /** Android: MAC address. iOS: the CoreBluetooth peripheral UUID. */
@@ -87,12 +90,41 @@ export interface GpsPayload {
   timestamp: number;
 }
 
+/**
+ * Android only: the GPS update interval in effect. Emitted when GPS starts and
+ * whenever it backs off or recovers.
+ */
+export interface GpsStatusPayload {
+  backedOff: boolean;
+  intervalMs: number;
+  /**
+   * `start`; `noFix` (no good fix for `gpsNoFixTimeoutMs`); `poorFix` (a fix
+   * worse than `gpsGoodAccuracyM`); `goodFix` (recovered).
+   */
+  reason: 'start' | 'noFix' | 'poorFix' | 'goodFix';
+  timestamp: number;
+}
+
 export interface HeadingPayload {
   /** Degrees from magnetic north, 0-360. */
   heading: number;
   /** Degrees of uncertainty, or -1 when the platform does not report it. */
   accuracy: number;
   timestamp: number;
+}
+
+/**
+ * One batch of accelerometer samples, gravity included, in Android's
+ * convention: m/s², and ~+9.8 on the axis pointing up while the device is at
+ * rest. iOS readings are converted to match.
+ */
+export interface AccelPayload {
+  /**
+   * `[x, y, z, timestamp]` per sample, oldest first; timestamp is epoch ms of
+   * the measurement, not of the flush. Arrays rather than objects, because at
+   * ~25 samples a second the repeated keys would be most of the payload.
+   */
+  samples: [number, number, number, number][];
 }
 
 export type PowerState = 'on' | 'off' | 'unauthorized' | 'unsupported' | 'unknown';
@@ -114,6 +146,7 @@ export interface AdapterState {
     ble: boolean;
     gps: boolean;
     heading: boolean;
+    accel: boolean;
   };
 }
 
@@ -146,6 +179,20 @@ export interface ScannerConfig {
   gpsIntervalMs?: number;
   /** Minimum movement before a GPS update, in metres (default 0). */
   gpsDistanceFilterM?: number;
+  /**
+   * Android: after this many ms without a good GPS fix (default 5000) — which
+   * is what being indoors looks like with GNSS alone — updates are requested
+   * at `gpsBackoffIntervalMs` instead. The next good fix restores
+   * `gpsIntervalMs`.
+   */
+  gpsNoFixTimeoutMs?: number;
+  /** Android: GPS update interval while backed off, in ms (default 5000). */
+  gpsBackoffIntervalMs?: number;
+  /**
+   * Android: a fix is good at this accuracy in metres or better (default 20).
+   * A poorer fix backs off at once and never restores `gpsIntervalMs`.
+   */
+  gpsGoodAccuracyM?: number;
   /** Heading updates below this change in degrees are suppressed (default 1). */
   headingFilterDeg?: number;
   /**
@@ -153,4 +200,11 @@ export interface ScannerConfig {
    * (default 2000). Prevents unbounded growth if the JS thread stalls.
    */
   maxBufferedReadings?: number;
+  /** Accelerometer sampling period in ms (default 40, i.e. 25Hz). */
+  accelIntervalMs?: number;
+  /**
+   * How long accelerometer samples are batched before crossing the bridge, in
+   * ms (default 100). Also passed to Android as the sensor's report latency.
+   */
+  accelFlushIntervalMs?: number;
 }

@@ -25,6 +25,8 @@ export interface Spec extends TurboModule {
   stopGps(): Promise<void>;
   startHeading(): Promise<void>;
   stopHeading(): Promise<void>;
+  startAccel(): Promise<void>;
+  stopAccel(): Promise<void>;
 
   /** Stops every stream and resets the sequence counter. */
   stopAll(): Promise<void>;

@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   # module 'ReactCodegen'". Nothing outside the pod imports the header; the .mm
   # reaches it by a quoted import.
   s.private_header_files = "ios/**/*.h"
-  s.frameworks   = "CoreBluetooth", "CoreLocation"
+  s.frameworks   = "CoreBluetooth", "CoreLocation", "CoreMotion"
 
   install_modules_dependencies(s)
 end

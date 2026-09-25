@@ -1,6 +1,6 @@
 # @iwayplus/react-native-scanner
 
-BLE + GPS + heading scanning for a React Native host app, relayed into the
+BLE + GPS + heading + accelerometer scanning for a React Native host app, relayed into the
 Iwayplus navigation page running in a WebView.
 
 The host app contributes **sensors and permissions**. Everything else —
@@ -13,6 +13,7 @@ and no venue logic is compiled into the host binary.
 │  CoreBluetooth / BLE scan │  JSON  │  positioning algorithms         │
 │  CoreLocation / GPS       │ ─────► │  beacon map, routing            │
 │  magnetometer / heading   │        │  map + navigation UI            │
+│  accelerometer            │        │  step detection                 │
 └───────────────────────────┘        └─────────────────────────────────┘
               ▲                                      │
               └────────── start / stop ◄─────────────┘
@@ -122,7 +123,8 @@ page → host over `postMessage`, events travel host → page as JSON envelopes:
 a WebView under memory pressure can pause and then deliver a burst, which
 time-windowed RSSI aggregation reads very differently from a steady stream.
 
-Event types: `hello`, `ble`, `gps`, `heading`, `adapter`, `error`. Full schemas
+Event types: `hello`, `ble`, `gps`, `gpsStatus`, `heading`, `accel`, `adapter`,
+`error`. Full schemas
 are in [`src/types.ts`](src/types.ts), which is the source of truth for the
 contract.
 
@@ -200,6 +202,23 @@ Two consequences worth knowing when testing:
   regression.
 - **A denied location permission costs you the arrow too**, not just the blue
   dot's accuracy — heading is gated behind the same grant on Android.
+
+### Accelerometer
+
+The page counts steps from the accelerometer while the user is navigating. It
+asks for the `accel` stream only then, and stops it when navigation ends, so
+the sensor is off while the user is just browsing the map.
+
+Without this stream the page falls back to the browser's `devicemotion`
+event. Chromium serves that by running the accelerometer, the gyroscope and
+the linear-acceleration sensor together at ~60Hz, although the step detector
+reads only one of them. The module runs the accelerometer alone, at 25Hz by
+default (`accelIntervalMs`), and batches the samples every 100ms
+(`accelFlushIntervalMs`) so the bridge isn't crossed per sample.
+
+Samples are in Android's convention — m/s², gravity included, ~+9.8 on the
+axis pointing up at rest — and iOS readings are converted to match. No
+permission is needed on either platform.
 
 ## Behaviour notes
 

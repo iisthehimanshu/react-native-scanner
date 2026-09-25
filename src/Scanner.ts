@@ -2,7 +2,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import NativeIwayplusScanner from './NativeIwayplusScanner';
 import type { AdapterState, ScannerConfig, ScannerEnvelope } from './types';
 
-export type ScannerStream = 'ble' | 'gps' | 'heading';
+export type ScannerStream = 'ble' | 'gps' | 'heading' | 'accel';
 
 /**
  * Imperative wrapper over the native module.
@@ -26,6 +26,8 @@ export const Scanner = {
             return NativeIwayplusScanner.startGps();
           case 'heading':
             return NativeIwayplusScanner.startHeading();
+          case 'accel':
+            return NativeIwayplusScanner.startAccel();
         }
       }),
     );
@@ -41,6 +43,8 @@ export const Scanner = {
             return NativeIwayplusScanner.stopGps();
           case 'heading':
             return NativeIwayplusScanner.stopHeading();
+          case 'accel':
+            return NativeIwayplusScanner.stopAccel();
         }
       }),
     );

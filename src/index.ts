@@ -11,11 +11,13 @@ export { BRIDGE_BOOTSTRAP, relayStatement } from './bridgeScript';
 
 export { PROTOCOL_VERSION } from './types';
 export type {
+  AccelPayload,
   AdapterState,
   BlePayload,
   BleReading,
   ErrorPayload,
   GpsPayload,
+  GpsStatusPayload,
   HeadingPayload,
   HelloPayload,
   PowerState,

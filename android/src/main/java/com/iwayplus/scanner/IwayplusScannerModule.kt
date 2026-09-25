@@ -29,6 +29,7 @@ class IwayplusScannerModule(
   private val ble = BleScanner(reactContext, sink)
   private val gps = GpsScanner(reactContext, sink)
   private val heading = HeadingScanner(reactContext, sink)
+  private val accel = AccelScanner(reactContext, sink)
 
   override fun getName(): String = NAME
 
@@ -37,6 +38,7 @@ class IwayplusScannerModule(
     ble.configure(config)
     gps.configure(config)
     heading.configure(config)
+    accel.configure(config)
     promise.resolve(null)
   }
 
@@ -61,10 +63,18 @@ class IwayplusScannerModule(
 
   override fun stopHeading(promise: Promise) = guard(promise) { heading.stop() }
 
+  override fun startAccel(promise: Promise) = guard(promise) {
+    announceOnce()
+    accel.start()
+  }
+
+  override fun stopAccel(promise: Promise) = guard(promise) { accel.stop() }
+
   override fun stopAll(promise: Promise) = guard(promise) {
     ble.stop()
     gps.stop()
     heading.stop()
+    accel.stop()
     // The page reads a sequence reset as "this is a fresh session", which is
     // what a full stop is. Anything else would look like a huge dropped range
     // when scanning resumes.
@@ -86,6 +96,7 @@ class IwayplusScannerModule(
     ble.stop()
     gps.stop()
     heading.stop()
+    accel.stop()
     super.invalidate()
   }
 
@@ -112,7 +123,8 @@ class IwayplusScannerModule(
       JSONObject()
         .put("ble", ble.isScanning)
         .put("gps", gps.isScanning)
-        .put("heading", heading.isScanning),
+        .put("heading", heading.isScanning)
+        .put("accel", accel.isScanning),
     )
     .toString()
 
