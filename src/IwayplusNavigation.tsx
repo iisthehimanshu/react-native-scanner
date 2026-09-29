@@ -5,7 +5,13 @@ import React, {
   useImperativeHandle,
   useRef,
 } from 'react';
-import { AppState, StyleSheet, View, type ViewStyle } from 'react-native';
+import {
+  AppState,
+  Linking,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import {
   WebView as RNWebView,
   type WebViewMessageEvent,
@@ -44,6 +50,9 @@ export interface IwayplusNavigationProps {
   /**
    * A command the bridge does not recognise. Return true if the host handled
    * it. Use this for app-level intents — sharing, booking, deep links.
+   *
+   * Also offered `openSettings` first: return true to show your own
+   * permission flow instead of the system settings page.
    */
   onCommand?: (command: Record<string, unknown>) => boolean;
   onPermissionResult?: (granted: boolean) => void;
@@ -172,6 +181,14 @@ export const IwayplusNavigation = forwardRef<
           return;
         case 'getState':
           void Scanner.getState();
+          return;
+        case 'openSettings':
+          if (!onCommand?.(command)) {
+            Linking.openSettings().catch(() => {
+              // No settings page to open is not something the page can act
+              // on; its prompt has already been dismissed.
+            });
+          }
           return;
         case 'close':
           onClose?.();

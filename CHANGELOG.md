@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+* New `openSettings` command. The bridge bootstrap exposes
+  `window.__iwayplusScanner.openSettings()`, and the host answers it with
+  `Linking.openSettings()`, the app's own page in system settings. The page
+  calls it from its "permission required" prompt. Before this, that prompt's
+  "Open Settings" button did nothing inside the WebView. A host passing
+  `onCommand` sees the command first and can return true to handle it itself.
+  Pages detect the command by the method's presence, so an older host is never
+  sent it.
+
 ## 0.2.2
 
 * New `accel` stream: the raw accelerometer, gravity included, for the page's
