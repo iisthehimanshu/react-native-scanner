@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.3
 
 * New `openSettings` command. The bridge bootstrap exposes
   `window.__iwayplusScanner.openSettings()`, and the host answers it with
