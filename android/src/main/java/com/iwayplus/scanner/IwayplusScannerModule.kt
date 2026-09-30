@@ -1,5 +1,8 @@
 package com.iwayplus.scanner
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
@@ -89,6 +92,30 @@ class IwayplusScannerModule(
       promise.resolve(state)
     } catch (error: Exception) {
       promise.reject(ERROR_CODE, error.message, error)
+    }
+  }
+
+  /** Android asks through `PermissionsAndroid`; this only reports the grant. */
+  override fun requestLocationPermission(promise: Promise) {
+    promise.resolve(gps.hasPermission())
+  }
+
+  /** Opens this app's details page, where denied permissions can be granted. */
+  override fun openSettings(promise: Promise) {
+    try {
+      val activity = reactApplicationContext.currentActivity
+      val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", reactApplicationContext.packageName, null),
+      )
+      if (activity != null) {
+        activity.startActivity(intent)
+      } else {
+        reactApplicationContext.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+      }
+      promise.resolve(true)
+    } catch (error: Exception) {
+      promise.resolve(false)
     }
   }
 

@@ -190,6 +190,21 @@ RCT_EXPORT_MODULE()
   });
 }
 
+- (void)requestLocationPermission:(RCTPromiseResolveBlock)resolve
+                            reject:(RCTPromiseRejectBlock)reject {
+  IWPOnMain(^{
+    [self->_impl requestLocationPermission:^(BOOL granted) {
+      resolve(@(granted));
+    }];
+  });
+}
+
+- (void)openSettings:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+  IWPOnMain(^{
+    resolve(@([self->_impl openSettings]));
+  });
+}
+
 - (void)invalidate {
   // The block holds self until the radios are stopped, even if teardown
   // releases the module in the meantime.

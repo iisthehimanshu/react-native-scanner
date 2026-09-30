@@ -34,6 +34,20 @@ export interface Spec extends TurboModule {
   /** JSON-encoded {@link AdapterState} — adapter power and permission status. */
   getState(): Promise<string>;
 
+  /**
+   * iOS: asks for "while using the app" location if it has never been asked,
+   * and resolves to whether location is granted. Android: resolves to the
+   * current grant — request it through `PermissionsAndroid` there.
+   */
+  requestLocationPermission(): Promise<boolean>;
+
+  /**
+   * Opens this app's page in system settings. On iOS a location that was never
+   * asked has no switch there yet, so the system prompt is shown instead.
+   * Resolves false when neither could be shown.
+   */
+  openSettings(): Promise<boolean>;
+
   /** JSON-encoded {@link ScannerEnvelope} of one scan event. */
   readonly onScannerEvent: EventEmitter<string>;
 }

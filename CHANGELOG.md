@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+* iOS: `requestScannerPermissions()` now asks for location while the app is in
+  use, and resolves to the answer. It used to resolve `true` without asking,
+  and location was only ever requested when GPS started, which the page never
+  did: it read a location that was never asked as not granted and showed its
+  "permission required" prompt instead. iOS lists Location on the app's
+  Settings page only once the app has asked, so "Open Settings" could not fix
+  it either. `autoRequestPermissions` now covers iOS the same way.
+* iOS: `openSettings` shows the location prompt when location was never asked,
+  and opens Settings only once it has been answered.
+* New native methods `requestLocationPermission()` and `openSettings()`, and
+  `Scanner.openSettings()`. The TurboModule spec changed, so hosts must rebuild
+  their native app to pick this release up.
+
 ## 0.2.3
 
 * New `openSettings` command. The bridge bootstrap exposes

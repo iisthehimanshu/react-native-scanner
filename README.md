@@ -53,6 +53,11 @@ still requires them to be **granted at runtime before the view is mounted**.
 <string>Used to show your position on the venue map.</string>
 ```
 
+Without `NSLocationWhenInUseUsageDescription`, iOS silently ignores the location
+request, and the page can never locate the user. `requestScannerPermissions()`
+(or `autoRequestPermissions`) asks for location while the app is in use;
+Bluetooth is prompted by iOS itself.
+
 Scanning is foreground-only. No background modes are required, and none should
 be added on this package's behalf.
 
@@ -93,7 +98,7 @@ That is the whole integration.
 |---|---|---|
 | `url` | `string` | The hosted navigation bundle. Supplied by Iwayplus. |
 | `config` | `ScannerConfig` | Optional tunables; sensible defaults otherwise. |
-| `autoRequestPermissions` | `boolean` | Request Android permissions on mount. Default `true`. |
+| `autoRequestPermissions` | `boolean` | Request Bluetooth and location permissions on mount (Android and iOS). Default `true`. |
 | `onClose` | `() => void` | The page asked to be dismissed. |
 | `onCommand` | `(cmd) => boolean` | App-level intents from the page (share, deep link…). |
 | `webViewProps` | `Partial<WebViewProps>` | Escape hatch onto the underlying WebView. |

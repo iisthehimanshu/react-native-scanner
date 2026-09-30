@@ -5,13 +5,7 @@ import React, {
   useImperativeHandle,
   useRef,
 } from 'react';
-import {
-  AppState,
-  Linking,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { AppState, StyleSheet, View, type ViewStyle } from 'react-native';
 import {
   WebView as RNWebView,
   type WebViewMessageEvent,
@@ -40,7 +34,7 @@ export interface IwayplusNavigationProps {
   /** Scanner tunables, applied before the page starts any stream. */
   config?: ScannerConfig;
   /**
-   * Request Android runtime permissions on mount (default true). Set false if
+   * Request runtime permissions on mount (default true). Set false if
    * the host app already runs its own permission flow — but grant them before
    * mounting either way.
    */
@@ -183,12 +177,7 @@ export const IwayplusNavigation = forwardRef<
           void Scanner.getState();
           return;
         case 'openSettings':
-          if (!onCommand?.(command)) {
-            Linking.openSettings().catch(() => {
-              // No settings page to open is not something the page can act
-              // on; its prompt has already been dismissed.
-            });
-          }
+          if (!onCommand?.(command)) void Scanner.openSettings();
           return;
         case 'close':
           onClose?.();

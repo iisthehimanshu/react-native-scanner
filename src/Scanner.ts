@@ -58,6 +58,14 @@ export const Scanner = {
     return JSON.parse(await NativeIwayplusScanner.getState()) as AdapterState;
   },
 
+  /**
+   * Opens this app's page in system settings, or on iOS the location prompt if
+   * location was never asked. Resolves false when neither could be shown.
+   */
+  openSettings(): Promise<boolean> {
+    return NativeIwayplusScanner.openSettings();
+  },
+
   /** Raw envelopes, still JSON-encoded. */
   subscribeRaw(listener: (json: string) => void) {
     return NativeIwayplusScanner.onScannerEvent(listener);
@@ -80,14 +88,19 @@ export const Scanner = {
 /**
  * Requests the runtime permissions scanning needs.
  *
- * Android only — iOS surfaces its own prompts on first use of CoreBluetooth
- * and CoreLocation, driven by the usage strings in the host's Info.plist.
+ * On iOS this asks for "while using the app" location and resolves to the
+ * answer. Bluetooth needs no request of its own: iOS prompts for it when the
+ * scanner is created. The host's Info.plist needs
+ * `NSLocationWhenInUseUsageDescription`, or iOS ignores the request.
  *
  * Call this and confirm it resolves `true` *before* mounting the navigation
  * view. Starting a scan against a denied adapter produces no readings and no
  * error the page can explain to the user.
  */
 export async function requestScannerPermissions(): Promise<boolean> {
+  if (Platform.OS === 'ios') {
+    return NativeIwayplusScanner.requestLocationPermission();
+  }
   if (Platform.OS !== 'android') return true;
 
   const wanted: string[] = [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
