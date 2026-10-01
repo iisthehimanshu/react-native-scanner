@@ -170,6 +170,22 @@ RCT_EXPORT_MODULE()
   });
 }
 
+- (void)speak:(NSString *)requestJson
+      resolve:(RCTPromiseResolveBlock)resolve
+       reject:(RCTPromiseRejectBlock)reject {
+  IWPOnMain(^{
+    [self->_impl speak:requestJson ?: @"{}"];
+    resolve(nil);
+  });
+}
+
+- (void)stopSpeaking:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+  IWPOnMain(^{
+    [self->_impl stopSpeaking];
+    resolve(nil);
+  });
+}
+
 - (void)stopAll:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   IWPOnMain(^{
     [self->_impl stopAll];

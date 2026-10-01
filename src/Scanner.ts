@@ -66,6 +66,18 @@ export const Scanner = {
     return NativeIwayplusScanner.openSettings();
   },
 
+  /**
+   * Speaks with the device's speech engine. `IwayplusNavigation` calls this
+   * for the page, whose WebView cannot speak on its own.
+   */
+  speak(request: Record<string, unknown>): Promise<void> {
+    return NativeIwayplusScanner.speak(JSON.stringify(request));
+  },
+
+  stopSpeaking(): Promise<void> {
+    return NativeIwayplusScanner.stopSpeaking();
+  },
+
   /** Raw envelopes, still JSON-encoded. */
   subscribeRaw(listener: (json: string) => void) {
     return NativeIwayplusScanner.onScannerEvent(listener);

@@ -5,14 +5,24 @@ import React, {
   useImperativeHandle,
   useRef,
 } from 'react';
-import { AppState, StyleSheet, View, type ViewStyle } from 'react-native';
+import {
+  AccessibilityInfo,
+  AppState,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import {
   WebView as RNWebView,
   type WebViewMessageEvent,
   type WebViewProps,
 } from 'react-native-webview';
 
-import { BRIDGE_BOOTSTRAP, relayStatement } from './bridgeScript';
+import {
+  BRIDGE_BOOTSTRAP,
+  relayStatement,
+  screenReaderStatement,
+} from './bridgeScript';
 import { Scanner, requestScannerPermissions, type ScannerStream } from './Scanner';
 import type { ScannerConfig } from './types';
 
@@ -104,6 +114,34 @@ export const IwayplusNavigation = forwardRef<
     return () => subscription.remove();
   }, []);
 
+  // The page chooses between a screen-reader announcement and speaking aloud,
+  // and only the host can see whether TalkBack or VoiceOver is on. Reported
+  // when the page says it is ready, and again whenever it changes.
+  const screenReader = useRef(false);
+  const reportScreenReader = useCallback(() => {
+    webRef.current?.injectJavaScript(screenReaderStatement(screenReader.current));
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void AccessibilityInfo.isScreenReaderEnabled().then(on => {
+      if (cancelled) return;
+      screenReader.current = on;
+      reportScreenReader();
+    });
+    const subscription = AccessibilityInfo.addEventListener(
+      'screenReaderChanged',
+      on => {
+        screenReader.current = on;
+        reportScreenReader();
+      },
+    );
+    return () => {
+      cancelled = true;
+      subscription.remove();
+    };
+  }, [reportScreenReader]);
+
   useEffect(() => {
     if (!autoRequestPermissions) return;
     let cancelled = false;
@@ -135,6 +173,8 @@ export const IwayplusNavigation = forwardRef<
     () => () => {
       running.current.clear();
       void Scanner.stopAll();
+      // The page is going away; nothing is left to hear the rest of a sentence.
+      void Scanner.stopSpeaking();
     },
     [],
   );
@@ -153,6 +193,7 @@ export const IwayplusNavigation = forwardRef<
         case 'ready':
           if (config) void Scanner.configure(config);
           void Scanner.getState();
+          reportScreenReader();
           return;
         case 'configure':
           void Scanner.configure((command.config ?? {}) as ScannerConfig);
@@ -179,6 +220,14 @@ export const IwayplusNavigation = forwardRef<
         case 'openSettings':
           if (!onCommand?.(command)) void Scanner.openSettings();
           return;
+        case 'speak': {
+          const { cmd: _cmd, ...request } = command;
+          void Scanner.speak(request);
+          return;
+        }
+        case 'stopSpeaking':
+          void Scanner.stopSpeaking();
+          return;
         case 'close':
           onClose?.();
           return;
@@ -186,7 +235,7 @@ export const IwayplusNavigation = forwardRef<
           onCommand?.(command);
       }
     },
-    [config, onClose, onCommand],
+    [config, onClose, onCommand, reportScreenReader],
   );
 
   return (

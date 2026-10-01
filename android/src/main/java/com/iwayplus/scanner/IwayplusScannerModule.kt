@@ -33,6 +33,7 @@ class IwayplusScannerModule(
   private val gps = GpsScanner(reactContext, sink)
   private val heading = HeadingScanner(reactContext, sink)
   private val accel = AccelScanner(reactContext, sink)
+  private val speaker = Speaker(reactContext, sink)
 
   override fun getName(): String = NAME
 
@@ -119,7 +120,15 @@ class IwayplusScannerModule(
     }
   }
 
+  /** Speaks a page instruction. See [Speaker] for the request shape. */
+  override fun speak(requestJson: String?, promise: Promise) = guard(promise) {
+    speaker.speak(requestJson)
+  }
+
+  override fun stopSpeaking(promise: Promise) = guard(promise) { speaker.stop() }
+
   override fun invalidate() {
+    speaker.shutdown()
     ble.stop()
     gps.stop()
     heading.stop()

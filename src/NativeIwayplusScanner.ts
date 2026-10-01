@@ -48,6 +48,17 @@ export interface Spec extends TurboModule {
    */
   openSettings(): Promise<boolean>;
 
+  /**
+   * Speaks with the device's speech engine, replacing anything being spoken.
+   * `requestJson` is `{id, text, language?, rate?, voices?}`. Progress comes
+   * back as `speech` events carrying the same `id`: `start`, then one of
+   * `done`, `stopped` or `error`.
+   */
+  speak(requestJson: string): Promise<void>;
+
+  /** Cuts off whatever {@link speak} started. */
+  stopSpeaking(): Promise<void>;
+
   /** JSON-encoded {@link ScannerEnvelope} of one scan event. */
   readonly onScannerEvent: EventEmitter<string>;
 }

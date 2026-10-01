@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+* The page's spoken instructions are now voiced by the host app. An Android
+  WebView has no speech engine, so navigation instructions were silent unless
+  TalkBack was on. The page sends `speak` / `stopSpeaking` over the bridge and
+  the module speaks with the device's text-to-speech engine (Android
+  `TextToSpeech`, iOS `AVSpeechSynthesizer`), reporting progress back as
+  `speech` events.
+* `IwayplusNavigation` tells the page whether TalkBack or VoiceOver is on, when
+  the page says it is ready and whenever it changes. The page uses that to
+  choose between a screen-reader announcement and speaking aloud.
+* New native methods `speak()` and `stopSpeaking()`, and `Scanner.speak()` /
+  `Scanner.stopSpeaking()`. The TurboModule spec changed, so hosts must rebuild
+  their native app to pick this release up. Android: the package manifest
+  declares the `TTS_SERVICE` query that Android 11+ needs to see the speech
+  engine.
+
 ## 0.2.5
 
 * The page's "Scan nearby QR" now works inside `IwayplusNavigation`.

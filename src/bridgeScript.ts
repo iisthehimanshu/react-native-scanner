@@ -23,6 +23,13 @@ export const BRIDGE_BOOTSTRAP = `
     streams: ['ble', 'gps', 'heading', 'accel'],
 
     /**
+     * Whether the device's screen reader (TalkBack / VoiceOver) is on. null
+     * until the host has said. A page cannot detect this itself; it uses it to
+     * choose between a screen-reader announcement and speaking aloud.
+     */
+    screenReader: null,
+
+    /**
      * The page assigns this. Events that arrive before it is set are queued,
      * because the native side can emit as soon as the WebView loads while the
      * Dart bundle is still starting up.
@@ -55,6 +62,13 @@ export const BRIDGE_BOOTSTRAP = `
       } catch (e) {
         return;
       }
+      // Speech progress is for whoever asked for the speech. The scan handler
+      // below still sees the event, so its sequence numbers stay unbroken.
+      if (event && event.type === 'speech') {
+        try {
+          window.dispatchEvent(new CustomEvent('iwayplusspeech', { detail: event.payload }));
+        } catch (e) {}
+      }
       if (handler) {
         try { handler(event, json); } catch (e) {}
       } else {
@@ -63,6 +77,14 @@ export const BRIDGE_BOOTSTRAP = `
         if (queue.length > 200) queue.shift();
         queue.push(event);
       }
+    },
+
+    /** Called by the host. Not part of the page-facing API. */
+    __setScreenReader: function (on) {
+      this.screenReader = !!on;
+      try {
+        window.dispatchEvent(new CustomEvent('iwayplusscreenreader', { detail: this.screenReader }));
+      } catch (e) {}
     },
 
     /** Send a command object to the host app. */
@@ -84,7 +106,23 @@ export const BRIDGE_BOOTSTRAP = `
      * browser API inside the WebView can reach them.
      */
     openSettings: function () { return this.send({ cmd: 'openSettings' }); },
-    close: function () { return this.send({ cmd: 'close' }); }
+    close: function () { return this.send({ cmd: 'close' }); },
+
+    /**
+     * Speaks with the device's own speech engine. A WebView either has none
+     * (Android) or will not use it without a tap (iOS).
+     *
+     * request: { id, text, language?, rate?, voices? }. rate is a multiple of
+     * normal speed; voices are engine voice names in order of preference.
+     * Progress arrives as iwayplusspeech window events whose detail is
+     * { id, state }: start, then one of done, stopped or error.
+     */
+    speak: function (request) {
+      var command = { cmd: 'speak' };
+      for (var key in request) command[key] = request[key];
+      return this.send(command);
+    },
+    stopSpeaking: function () { return this.send({ cmd: 'stopSpeaking' }); }
   };
 
   window.dispatchEvent(new Event('iwayplusscannerready'));
@@ -101,4 +139,16 @@ export function relayStatement(json: string): string {
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029');
   return `window.__iwayplusScanner && window.__iwayplusScanner.__receive(${literal}); true;`;
+}
+
+/**
+ * Tells the page whether the device's screen reader is on. Guarded twice: a
+ * page without the bridge, and a page bootstrapped by an older copy of this
+ * package.
+ */
+export function screenReaderStatement(on: boolean): string {
+  return (
+    'window.__iwayplusScanner && window.__iwayplusScanner.__setScreenReader && ' +
+    `window.__iwayplusScanner.__setScreenReader(${on ? 'true' : 'false'}); true;`
+  );
 }
