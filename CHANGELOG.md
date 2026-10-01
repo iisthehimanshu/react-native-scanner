@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.5
 
 * The page's "Scan nearby QR" now works inside `IwayplusNavigation`.
   Android: the package manifest declares `CAMERA` (camera feature not

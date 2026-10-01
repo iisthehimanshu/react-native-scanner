@@ -1,6 +1,6 @@
 {
   "name": "@iwayplus/react-native-scanner",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "BLE + GPS + heading scanning for React Native, relayed into an Iwayplus navigation WebView.",
   "main": "src/index.ts",
   "types": "src/index.ts",
