@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+* The page's "Scan nearby QR" now works inside `IwayplusNavigation`.
+  Android: the package manifest declares `CAMERA` (camera feature not
+  required). react-native-webview only asks for the camera when the manifest
+  declares it, so the page was getting "NotAllowedError: Permission denied".
+  iOS: the WebView sets `mediaCapturePermissionGrantType` to
+  `grantIfSameHostElsePrompt`. WebKit used to show its own camera prompt every
+  time the scanner opened; now the user sees the system prompt once.
+* iOS hosts need `NSCameraUsageDescription` in Info.plist. Android hosts must
+  rebuild to pick up the manifest change.
+
 ## 0.2.4
 
 * iOS: `requestScannerPermissions()` now asks for location while the app is in

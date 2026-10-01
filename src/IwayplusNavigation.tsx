@@ -212,6 +212,13 @@ export const IwayplusNavigation = forwardRef<
         geolocationEnabled
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
+        // The page opens the camera for "Scan nearby QR". WebKit's default is
+        // to show its own prompt every time; this grants the page's own
+        // requests, so the user only sees the system camera prompt, once.
+        // Frames from another host still get WebKit's prompt. Android needs no
+        // prop: react-native-webview requests CAMERA itself, which the
+        // package manifest declares.
+        mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         originWhitelist={['https://*']}
         {...webViewProps}
       />

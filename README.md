@@ -51,12 +51,20 @@ still requires them to be **granted at runtime before the view is mounted**.
 <string>Used to find nearby beacons so we can show your position indoors.</string>
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>Used to show your position on the venue map.</string>
+<key>NSCameraUsageDescription</key>
+<string>Used to scan a nearby QR code and set your location.</string>
 ```
 
 Without `NSLocationWhenInUseUsageDescription`, iOS silently ignores the location
 request, and the page can never locate the user. `requestScannerPermissions()`
 (or `autoRequestPermissions`) asks for location while the app is in use;
 Bluetooth is prompted by iOS itself.
+
+The camera is only for the page's "Scan nearby QR". It is asked for the first
+time the page opens the scanner, on both platforms, and not again. The page's
+own camera and microphone requests are granted without WebKit's per-page
+prompt; pass `webViewProps={{ mediaCapturePermissionGrantType: 'prompt' }}` to
+keep that prompt.
 
 Scanning is foreground-only. No background modes are required, and none should
 be added on this package's behalf.

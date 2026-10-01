@@ -23,4 +23,16 @@
       android:name="android.hardware.bluetooth_le"
       android:required="false" />
 
+  <!--
+    The page's "Scan nearby QR" opens the camera inside the WebView.
+    react-native-webview asks for it at runtime the first time the page does,
+    but only when the manifest declares it; without this the page gets
+    "NotAllowedError: Permission denied". Not required, so devices without a
+    camera can still install the host app.
+  -->
+  <uses-permission android:name="android.permission.CAMERA" />
+  <uses-feature
+      android:name="android.hardware.camera"
+      android:required="false" />
+
 </manifest>
