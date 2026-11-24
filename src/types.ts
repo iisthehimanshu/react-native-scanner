@@ -61,6 +61,12 @@ export interface BleReading {
   timestamp: number;
   /** Manufacturer-specific data, uppercase hex; `""` when absent. */
   manufacturerHex: string;
+  /**
+   * The whole advertisement as transmitted (AD structures, e.g.
+   * `0B09…0EFF0505…`), uppercase hex; `""` when unavailable. Android sends
+   * the raw record; iOS rebuilds it from the local name and manufacturer data.
+   */
+  packetHex: string;
 }
 
 /** A flush window's worth of advertisements. */
